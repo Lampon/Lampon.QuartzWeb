@@ -31,6 +31,7 @@ namespace Lampon.QuartzWeb.Controllers
         /// <returns></returns>
         public IActionResult AddJob(ScheduleEntity schedule)
         {
+
             var result = new BaseResult();
             if (schedule.JobType == 0)
             {
