@@ -4,15 +4,27 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+using HzQxj.Quartz.Entity;
+
 using Lampon.QuartzWeb.Models;
 using Lampon.QuartzWeb.QuartzCore;
 using Lampon.QuartzWeb.QuartzCore.Jobs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Lampon.QuartzWeb.Controllers
 {
     public class HomeController : Controller
     {
+        public ActionResult Index()
+        {
+            //DbContext db = new DbContext();
+            //HzQxj_ExcuteLog excuteLog2 = new HzQxj_ExcuteLog();
+            //excuteLog2.ExcuteTime = "222";
+            //var res = db.SugarDatabase.Insertable(excuteLog2).ExecuteCommand();
+            //DbContext db = new DbContext();
+            //db.SugarDatabase.CodeFirst.InitTables(typeof(HzQxj_SendLog), typeof(HzQxj_ExcuteLog));
+            return Content("");
+        }
         /// <summary>
         /// 查询任务
         /// </summary>
