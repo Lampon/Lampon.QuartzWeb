@@ -11,6 +11,9 @@ using System.Xml;
 using HzQxj.Quartz.Entity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 using Quartz;
 using SqlSugar;
 using WeChat.SDK;
@@ -22,9 +25,14 @@ namespace HzQxj.Quartz
     public class HzQxjJob : IJob
     {
         private DbContext dbContext = new DbContext();
+        private NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public async Task Execute(IJobExecutionContext context)
         {
-        
+            //LoggingConfiguration loggingConfiguration = new LoggingConfiguration();
+            //string path = AppDomain.CurrentDomain.BaseDirectory + "log/" + DateTime.Now.ToShortDateString() + ".log";
+            //loggingConfiguration.AddRule(LogLevel.Debug, LogLevel.Fatal, new FileTarget(path));
+            //LogManager.Configuration = loggingConfiguration;
+            logger.Info("程序正在执行");
             WebClient webClient = new WebClient();
             string content = webClient.DownloadString("http://www.hzqx.com/hztq/data/QxyjxxInfo.xml");
             XmlDocument doc = new XmlDocument();
@@ -70,12 +78,12 @@ namespace HzQxj.Quartz
                         weChatUsers = GetOpenidList(weChatUsers, token);
                         List<string> list = weChatUsers.data.openid;
                         string templateId = "";
-                        string newData;
+                        var data = new object();
                         if (!w_title.Contains("解除"))
                         {
                             //气象灾害预警提醒
                             templateId = "yQaoXyMTjeY1uNVdVa0d4qQ_qJWdK16d9RfKbFeJIsQ";
-                            var data = new WarningNoticeTemplate()
+                            data = new WarningNoticeTemplate()
                             {
                                 first = new TemplateDataItem(w_title),
                                 alarm_unit = new TemplateDataItem("杭州市气象台"),
@@ -84,13 +92,13 @@ namespace HzQxj.Quartz
                                 alarm_time = new TemplateDataItem(w_ldatetime),
                                 remark = new TemplateDataItem(w_text)
                             };
-                            newData = JsonConvert.SerializeObject(data);
+                            //newData = JsonConvert.SerializeObject(data);
                         }
                         else
                         {
                             //气象灾害预警解除提醒
                             templateId = "dltXNCOacQXAKf5F5oDaz9wuSJ8vAzFBXeDg6vRckRM";
-                            var data = new RemoveWarningTemplate()
+                            data = new RemoveWarningTemplate()
                             {
                                 first = new TemplateDataItem(w_title),
                                 keyword1 = new TemplateDataItem("杭州市气象台"),
@@ -100,7 +108,7 @@ namespace HzQxj.Quartz
                                 remark = new TemplateDataItem(w_text)
                             };
 
-                            newData = JsonConvert.SerializeObject(data);
+                            //newData = JsonConvert.SerializeObject(data);
                         }
                         DateTime stTime = DateTime.Now;
                         foreach (var item in list)
@@ -111,7 +119,7 @@ namespace HzQxj.Quartz
                                 template_id = templateId,
                                 topcolor = "#FF0000",
                                 url = "",
-                                data = newData
+                                data = data
                             };
                             string jsonString = JsonConvert.SerializeObject(msgData);
                             string urlFormat = string.Format("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={0}", token);

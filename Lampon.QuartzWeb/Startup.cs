@@ -9,6 +9,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Lampon.QuartzWeb.Models;
 using Lampon.QuartzWeb.QuartzCore;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using NLog.Web;
 
 namespace Lampon.QuartzWeb
 {
@@ -42,7 +45,7 @@ namespace Lampon.QuartzWeb
             }
         }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -56,6 +59,8 @@ namespace Lampon.QuartzWeb
             //使用默认起始页
             app.UseDefaultFiles();//自动查找wwwroot 中的default.html index.html文件
             app.UseStaticFiles();
+            loggerFactory.AddNLog();//添加NLog
+            env.ConfigureNLog("NLog.config");//读取Nlog配置文件
 
             app.UseMvc(routes =>
             {
