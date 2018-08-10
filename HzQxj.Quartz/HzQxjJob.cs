@@ -28,135 +28,171 @@ namespace HzQxj.Quartz
         private NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public async Task Execute(IJobExecutionContext context)
         {
+
             //LoggingConfiguration loggingConfiguration = new LoggingConfiguration();
             //string path = AppDomain.CurrentDomain.BaseDirectory + "log/" + DateTime.Now.ToShortDateString() + ".log";
             //loggingConfiguration.AddRule(LogLevel.Debug, LogLevel.Fatal, new FileTarget(path));
             //LogManager.Configuration = loggingConfiguration;
             logger.Info("程序正在执行");
-            WebClient webClient = new WebClient();
-            string content = webClient.DownloadString("http://www.hzqx.com/hztq/data/QxyjxxInfo.xml");
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(content);
-            XmlNodeList xnList = doc.SelectNodes("//WeiXin");
-            for (int i = 0; i < xnList.Count; i++)
+            string time = "2018-07-26";
+            if (IsAllowExcute(time))
             {
-                if (xnList[i].SelectSingleNode("YjName").InnerText.Contains("杭州市"))
-                {
-                    string w_text = xnList[i].SelectSingleNode("YjNr").InnerText;
-                    //类别
-                    string category = "";
-                    if (xnList[i].SelectSingleNode("YjName").InnerText.Contains("发布"))
-                    {
-                        Match mcat = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"发布\S+色");
-                        category = mcat.Groups[0].Value.Substring(2, mcat.Groups[0].Value.Length - 4);
-                    }
-                    else
-                    {
-                        Match mcat = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"解除\S+色");
-                        category = mcat.Groups[0].Value.Substring(2, mcat.Groups[0].Value.Length - 4);
-                    }
-                    //获取预警级别
-                    Match mlevel = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"\S色");
-                    string level = mlevel.Groups[0].Value;
-                    //发布日期
-                    Match m = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"[\d]{4}\S+[\d]分");
-                    string w_ldatetime = m.Groups[0].Value;
-                    string w_title = xnList[i].SelectSingleNode("YjName").InnerText.Replace("\r\n", "").Replace("\"", "'");
-                    if (IsAllowExcute(m.Groups[0].Value))
-                    {
-                        string appid = "wx201b58af0d19763b";
-                        string secret = "fc6dd99763c170b7937515f220ebda42";
-                        var getToken = string.Format("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}", appid, secret);
-                        WebClient webGetToken = new WebClient();
-                        var tokenObject = JsonConvert.DeserializeObject<AccessTokenJson>(webGetToken.DownloadString(getToken));
-                        string token = tokenObject.access_token;
-                        string getOpenidListUrl = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + token + "&next_openid=";
-                        WebClient webClientOpenId = new WebClient();
-                        string resOpenidList = webClientOpenId.DownloadString(getOpenidListUrl);
-                        WeChatUsers weChatUsers = (WeChatUsers)JsonConvert.DeserializeObject(resOpenidList, typeof(WeChatUsers));
-                        weChatUsers.total = weChatUsers.total - 1;
-                        weChatUsers = GetOpenidList(weChatUsers, token);
-                        List<string> list = weChatUsers.data.openid;
-                        string templateId = "";
-                        var data = new object();
-                        if (!w_title.Contains("解除"))
-                        {
-                            //气象灾害预警提醒
-                            templateId = "yQaoXyMTjeY1uNVdVa0d4qQ_qJWdK16d9RfKbFeJIsQ";
-                            data = new WarningNoticeTemplate()
-                            {
-                                first = new TemplateDataItem(w_title),
-                                alarm_unit = new TemplateDataItem("杭州市气象台"),
-                                alarm_type = new TemplateDataItem(category),
-                                alarm_level = new TemplateDataItem(level),
-                                alarm_time = new TemplateDataItem(w_ldatetime),
-                                remark = new TemplateDataItem(w_text)
-                            };
-                            //newData = JsonConvert.SerializeObject(data);
-                        }
-                        else
-                        {
-                            //气象灾害预警解除提醒
-                            templateId = "dltXNCOacQXAKf5F5oDaz9wuSJ8vAzFBXeDg6vRckRM";
-                            data = new RemoveWarningTemplate()
-                            {
-                                first = new TemplateDataItem(w_title),
-                                keyword1 = new TemplateDataItem("杭州市气象台"),
-                                keyword2 = new TemplateDataItem(category),
-                                keyword3 = new TemplateDataItem(level),
-                                keyword4 = new TemplateDataItem(w_ldatetime),
-                                remark = new TemplateDataItem(w_text)
-                            };
+                //string appid = "wx201b58af0d19763b";
+                //string secret = "fc6dd99763c170b7937515f220ebda42";
+                //var getToken = string.Format("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}", appid, secret);
+                //WebClient webGetToken = new WebClient();
+                //var tokenObject = JsonConvert.DeserializeObject<AccessTokenJson>(webGetToken.DownloadString(getToken));
+                //string token = tokenObject.access_token;
+                //string getOpenidListUrl = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + token + "&next_openid=";
+                //WebClient webClientOpenId = new WebClient();
+                //string resOpenidList = webClientOpenId.DownloadString(getOpenidListUrl);
+                //WeChatUsers weChatUsers = (WeChatUsers)JsonConvert.DeserializeObject(resOpenidList, typeof(WeChatUsers));
+                //weChatUsers.total = weChatUsers.total - 1;
+                //weChatUsers = GetOpenidList(weChatUsers, token);
+                //List<string> list = weChatUsers.data.openid;
 
-                            //newData = JsonConvert.SerializeObject(data);
-                        }
-                        DateTime stTime = DateTime.Now;
-                        foreach (var item in list)
-                        {
-                            var msgData = new TempleteModel()
+                int count = 0;
+                for (int i = 0; i < 21000; i++)
+                {
+                    try
+                    {
+                        string urlFormat = "https://www.baidu.com/";
+                        WebClient webClientNotify = new WebClient();
+                        webClientNotify.UploadStringCompleted += new UploadStringCompletedEventHandler(
+                            delegate (object sender, UploadStringCompletedEventArgs args)
                             {
-                                touser = item,
-                                template_id = templateId,
-                                topcolor = "#FF0000",
-                                url = "",
-                                data = data
-                            };
-                            string jsonString = JsonConvert.SerializeObject(msgData);
-                            string urlFormat = string.Format("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={0}", token);
-                            WebClient webClientNotify = new WebClient();
-                            webClientNotify.UploadStringCompleted += new UploadStringCompletedEventHandler(
-                                delegate (object sender, UploadStringCompletedEventArgs args)
+                                count++;
+                                DbContext db = new DbContext();
+                                HzQxj_SendLog hzQxjSendLog = new HzQxj_SendLog();
+                                hzQxjSendLog.Content = "测试";
+                                hzQxjSendLog.Openid = urlFormat;
+                                hzQxjSendLog.ErrMsg = "";
+                                hzQxjSendLog.Result = "";
+                                if (args.Error != null)
                                 {
-                                    DbContext db = new DbContext();
-                                    HzQxj_SendLog hzQxjSendLog = new HzQxj_SendLog();
-                                    hzQxjSendLog.Content = jsonString;
-                                    hzQxjSendLog.Openid = urlFormat;
-                                    hzQxjSendLog.ErrMsg = "";
-                                    hzQxjSendLog.Result = "";
-                                    if (args.Error != null)
-                                    {
-                                        hzQxjSendLog.ErrMsg = args.Error.Message;
-                                    }
-                                    else
-                                    {
-                                        hzQxjSendLog.Result = args.Result;
-                                    }
+                                    hzQxjSendLog.ErrMsg = args.Error.Message;
                                     db.SugarDatabase.Insertable(hzQxjSendLog).ExecuteCommand();
-                                });
-                            webClientNotify.UploadStringAsync(new Uri(urlFormat), jsonString);
-                        }
-                        DateTime endTime = DateTime.Now;
-                        Console.WriteLine(endTime.Subtract(stTime).TotalMilliseconds);
-                        HzQxj_ExcuteLog excuteLog = new HzQxj_ExcuteLog();
-                        excuteLog.ExcuteTime = m.Groups[0].Value;
-                        dbContext.SugarDatabase.Insertable(excuteLog).ExecuteCommand();
+                                }
+                                else
+                                {
+                                    hzQxjSendLog.Result = args.Result;
+                                }
+
+                                if (count == 20000)
+                                {
+                                    HzQxj_ExcuteLog hzQxjExcuteLog=new HzQxj_ExcuteLog();
+                                    hzQxjExcuteLog.ExcuteTime = count.ToString();
+                                    db.SugarDatabase.Insertable(hzQxjExcuteLog).ExecuteCommand();
+                                }
+
+                            });
+                        webClientNotify.UploadStringAsync(new Uri(urlFormat), "");
                     }
-                    else
+                    catch (Exception e)
+                    {
+                        logger.Info("异常:" + e.ToString());
+                    }
+                    finally
                     {
 
                     }
                 }
+                DateTime endTime = DateTime.Now;
+                HzQxj_ExcuteLog excuteLog = new HzQxj_ExcuteLog();
+                excuteLog.ExcuteTime = time;
+                dbContext.SugarDatabase.Insertable(excuteLog).ExecuteCommand();
             }
+
+
+
+
+            //WebClient webClient = new WebClient();
+            //string content = webClient.DownloadString("http://www.hzqx.com/hztq/data/QxyjxxInfo.xml");
+            //XmlDocument doc = new XmlDocument();
+            //doc.LoadXml(content);
+            //XmlNodeList xnList = doc.SelectNodes("//WeiXin");
+            //for (int i = 0; i < xnList.Count; i++)
+            //{
+            //    if (xnList[i].SelectSingleNode("YjName").InnerText.Contains("杭州市"))
+            //    {
+            //        string w_text = xnList[i].SelectSingleNode("YjNr").InnerText;
+            //        //类别
+            //        string category = "";
+            //        if (xnList[i].SelectSingleNode("YjName").InnerText.Contains("发布"))
+            //        {
+            //            Match mcat = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"发布\S+色");
+            //            category = mcat.Groups[0].Value.Substring(2, mcat.Groups[0].Value.Length - 4);
+            //        }
+            //        else
+            //        {
+            //            Match mcat = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"解除\S+色");
+            //            category = mcat.Groups[0].Value.Substring(2, mcat.Groups[0].Value.Length - 4);
+            //        }
+            //        //获取预警级别
+            //        Match mlevel = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"\S色");
+            //        string level = mlevel.Groups[0].Value;
+            //        //发布日期
+            //        Match m = Regex.Match(xnList[i].SelectSingleNode("YjName").InnerText, @"[\d]{4}\S+[\d]分");
+            //        string w_ldatetime = m.Groups[0].Value;
+            //        string w_title = xnList[i].SelectSingleNode("YjName").InnerText.Replace("\r\n", "").Replace("\"", "'");
+            //        if (IsAllowExcute(m.Groups[0].Value))
+            //        {
+            //            string appid = "wx201b58af0d19763b";
+            //            string secret = "fc6dd99763c170b7937515f220ebda42";
+            //            var getToken = string.Format("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}", appid, secret);
+            //            WebClient webGetToken = new WebClient();
+            //            var tokenObject = JsonConvert.DeserializeObject<AccessTokenJson>(webGetToken.DownloadString(getToken));
+            //            string token = tokenObject.access_token;
+            //            string getOpenidListUrl = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=" + token + "&next_openid=";
+            //            WebClient webClientOpenId = new WebClient();
+            //            string resOpenidList = webClientOpenId.DownloadString(getOpenidListUrl);
+            //            WeChatUsers weChatUsers = (WeChatUsers)JsonConvert.DeserializeObject(resOpenidList, typeof(WeChatUsers));
+            //            weChatUsers.total = weChatUsers.total - 1;
+            //            weChatUsers = GetOpenidList(weChatUsers, token);
+            //            List<string> list = weChatUsers.data.openid;
+            //            string templateId = "";
+            //            var data = new object();
+            //            if (!w_title.Contains("解除"))
+            //            {
+            //                //气象灾害预警提醒
+            //                templateId = "yQaoXyMTjeY1uNVdVa0d4qQ_qJWdK16d9RfKbFeJIsQ";
+            //                data = new WarningNoticeTemplate()
+            //                {
+            //                    first = new TemplateDataItem(w_title),
+            //                    alarm_unit = new TemplateDataItem("杭州市气象台"),
+            //                    alarm_type = new TemplateDataItem(category),
+            //                    alarm_level = new TemplateDataItem(level),
+            //                    alarm_time = new TemplateDataItem(w_ldatetime),
+            //                    remark = new TemplateDataItem(w_text)
+            //                };
+            //                //newData = JsonConvert.SerializeObject(data);
+            //            }
+            //            else
+            //            {
+            //                //气象灾害预警解除提醒
+            //                templateId = "dltXNCOacQXAKf5F5oDaz9wuSJ8vAzFBXeDg6vRckRM";
+            //                data = new RemoveWarningTemplate()
+            //                {
+            //                    first = new TemplateDataItem(w_title),
+            //                    keyword1 = new TemplateDataItem("杭州市气象台"),
+            //                    keyword2 = new TemplateDataItem(category),
+            //                    keyword3 = new TemplateDataItem(level),
+            //                    keyword4 = new TemplateDataItem(w_ldatetime),
+            //                    remark = new TemplateDataItem(w_text)
+            //                };
+
+            //                //newData = JsonConvert.SerializeObject(data);
+            //            }
+            //            DateTime stTime = DateTime.Now;
+
+
+            //        }
+            //        else
+            //        {
+
+            //        }
+            //    }
+            //}
         }
         /// <summary>
         /// 是否允许执行

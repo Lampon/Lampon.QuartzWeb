@@ -23,10 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HzQxj.Quartz\HzQxj.Quartz.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="DAL\tables_sqlite.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

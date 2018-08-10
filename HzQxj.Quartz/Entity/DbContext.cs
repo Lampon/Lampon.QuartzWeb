@@ -14,11 +14,12 @@ namespace HzQxj.Quartz.Entity
             SqlSugarClient db = new SqlSugarClient(
                 new ConnectionConfig()
                 {
-                    ConnectionString = "Data Source=rdsv317vuz4on3rajefzn.sqlserver.rds.aliyuncs.com,3433;Initial Catalog=log_database;Persist Security Info=True;User ID=log;Password=joinheadqazxcv",//主数据库
+                    ConnectionString = "Data Source=rdsv317vuz4on3rajefzn.sqlserver.rds.aliyuncs.com,3433;Initial Catalog=log_database;Persist Security Info=True;User ID=log;Password=joinheadqazxcv;max pool size=32767;",//主数据库
                     DbType = SqlSugar.DbType.SqlServer,
                     IsAutoCloseConnection = true,
-                    InitKeyType = InitKeyType.Attribute
+                    InitKeyType = InitKeyType.Attribute,
                 });
+            db.Ado.CommandTimeOut = 0;
             db.Aop.OnLogExecuting = (sql, pars) =>
             {
                 if (db.TempItems == null) db.TempItems = new Dictionary<string, object>();
